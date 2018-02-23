@@ -46,15 +46,16 @@ lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosS
 
   geneID = gene
   #Protein domain source.
-  gff = system.file('extdata', 'protein_domains.txt.gz', package = 'maftools')
+  gff = system.file('extdata', 'protein_domains.rds', package = 'maftools')
+  gff = readRDS(file = gff)
 
-  if(Sys.info()[['sysname']] == 'Windows'){
-    gff.gz = gzfile(description = gff, open = 'r')
-    gff <- suppressWarnings( data.table(read.csv( file = gff.gz, header = TRUE, sep = '\t', stringsAsFactors = FALSE)) )
-    close(gff.gz)
-  } else{
-    gff = data.table::fread(input = paste('zcat <', gff), sep = '\t', stringsAsFactors = FALSE)
-  }
+  # if(Sys.info()[['sysname']] == 'Windows'){
+  #   gff.gz = gzfile(description = gff, open = 'r')
+  #   gff <- suppressWarnings( data.table(read.csv( file = gff.gz, header = TRUE, sep = '\t', stringsAsFactors = FALSE)) )
+  #   close(gff.gz)
+  # } else{
+  #   gff = data.table::fread(input = paste('zcat <', gff), sep = '\t', stringsAsFactors = FALSE)
+  # }
 
   mut = subsetMaf(maf = maf, includeSyn = FALSE, genes = gene, query = "Variant_Type != 'CNV'")
 
