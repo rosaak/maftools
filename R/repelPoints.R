@@ -1,6 +1,6 @@
 #Repel points (shift points 40% to their inter cluster distance.)
 shiftPoints = function(clust, leftDist, rightDist){
-  
+
   if(nrow(clust) == 1){
     clust$pos2 = clust$pos
     return(clust)
@@ -8,32 +8,32 @@ shiftPoints = function(clust, leftDist, rightDist){
     #if distance is huge between right and left clusters, bring it down to 50.
     leftDist = ifelse(test = leftDist >100, yes = 50, no = leftDist )
     rightDist = ifelse(test = rightDist >100, yes = 50, no = rightDist)
-    
+
     startPoint = clust[1,pos] - as.integer(leftDist * 0.2)
-    endPoint = clust[nrow(clust), pos] + as.integer(rightDist * 0.2)  
+    endPoint = clust[nrow(clust), pos] + as.integer(rightDist * 0.2)
     clust$pos2 = c(startPoint, endPoint)
     return(clust)
   } else{
-    
+
     leftDist = ifelse(test = leftDist >100, yes =  50, no = leftDist)
     rightDist = ifelse(test = rightDist >100, yes = 50, no = rightDist)
-    
+
     startPoint = clust[1,pos] - as.integer(leftDist * 0.4)
     endPoint = clust[nrow(clust), pos] + as.integer(rightDist * 0.4)
-    posPoints = clust[2:(nrow(clust)-1), pos]  
-    
+    posPoints = clust[2:(nrow(clust)-1), pos]
+
     dist = rbind(abs(posPoints - startPoint), abs(posPoints - endPoint))
     dist = sapply(apply(dist, 2, function(x) which(x == max(x))), '[[', 1)
-    
-    
+
+
     tempStart = startPoint
     tempEnd = endPoint
-    
+
     for(i in 1:length(posPoints)){
-      
+
       if(dist[i] == 1){
         posPoints[i] = tempStart + as.integer(0.4 * abs(tempStart - posPoints[i]))
-        tempStart = posPoints[i]  
+        tempStart = posPoints[i]
       }else{
         posPoints[i] = tempEnd - as.integer(0.4 * abs(tempEnd - posPoints[i]))
         tempEnd = posPoints[i]
@@ -46,24 +46,24 @@ shiftPoints = function(clust, leftDist, rightDist){
 
 #cluster
 repelPoints = function(dat, protLen, clustSize){
-  
+
   dat = data.table(dat)
-  
+
   dat = dat[order(dat$pos),]
   dat$distance = c(0,diff(dat$pos))
-  
+
   ## cluster identification
   mergeDist = clustSize #hard coded inter event distance.
   cdf = c()
   cluster = 1
   n = 1
   start = end = dat[1,pos]
-  
+
   for(i in 2:nrow(dat)){
-    
+
     dist = dat[i,distance]
     position = dat[i,pos]
-    
+
     if(dist <= mergeDist){
       end = position
       n = n+1
@@ -76,7 +76,7 @@ repelPoints = function(dat, protLen, clustSize){
     }
   }
   cdf = rbind(cdf, data.frame(cluster = paste('cluster', cluster, sep='_'), start = start, end = end, n = n))
-  
+
   #Assign clusters to main table
   cdf2 = c()
   for(i in 1:nrow(cdf)){
@@ -86,7 +86,7 @@ repelPoints = function(dat, protLen, clustSize){
     tdat[,cluster:= paste('cluster', i, sep='_')]
     cdf2 = rbind(cdf2, tdat)
   }
-  
+
   #Cluster summary and inter cluster distance
   clustSum = cdf2[,.(min = min(pos), max = max(pos)), by = cluster]
   clustEnd = clustSum[1,max]
@@ -96,14 +96,14 @@ repelPoints = function(dat, protLen, clustSize){
       clustDist = c(clustDist, clustSum[i,min] -clustEnd)
       clustEnd = clustSum[i,max]
     }
-  } 
-  
+  }
+
   clustSum[,dist := clustDist]
-  
+
   ## repel points
   cdf3 = c()
   clusters = clustSum[,cluster]
-  
+
   for(i in 1:length(clusters)){
     tempClust = cdf2[cluster == clusters[i]]
     #print(tempClust)
@@ -119,7 +119,7 @@ repelPoints = function(dat, protLen, clustSize){
       cdf3$pos2 = ifelse(test = cdf3$pos2 >= protLen, yes = protLen, no = cdf3$pos2)
     }
   }
-  
+
   return(cdf3)
 }
 

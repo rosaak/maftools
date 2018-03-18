@@ -35,10 +35,10 @@
 #'
 #' @export
 
-lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosSize = 3, showMutationRate = TRUE, fn = NULL,
+lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosSize = 0.9, showMutationRate = TRUE, fn = NULL,
                          showDomainLabel = TRUE, cBioPortal = FALSE, refSeqID = NULL, proteinID = NULL,
-                         repel = FALSE, collapsePosLabel = TRUE, legendTxtSize = 10, labPosAngle = 0, domainLabelSize = 2.5, axisTextSize = c(9, 12),
-                         printCount = FALSE, colors = NULL, domainColors = NULL, labelOnlyUniqueDoamins = TRUE, defaultYaxis = TRUE, titleSize = c(12, 10), pointSize = 1.5){
+                         repel = FALSE, collapsePosLabel = TRUE, legendTxtSize = 1, labPosAngle = 0, domainLabelSize = 1, axisTextSize = c(1, 1),
+                         printCount = FALSE, colors = NULL, domainColors = NULL, labelOnlyUniqueDoamins = TRUE, defaultYaxis = TRUE, titleSize = c(1.2, 1), pointSize = 1.5){
 
   if(is.null(gene)){
     stop('Please provide a gene name.')
@@ -46,7 +46,8 @@ lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosS
 
   geneID = gene
   #Protein domain source.
-  gff = system.file('extdata', 'protein_domains.rds', package = 'maftools')
+  #gff = system.file('extdata', 'protein_domains.rds', package = 'maftools')
+  gff = "inst/extdata/protein_domains.rds"
   gff = readRDS(file = gff)
 
   # if(Sys.info()[['sysname']] == 'Windows'){
@@ -125,12 +126,15 @@ lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosS
   }else{
     if(is.null(colors)){
       col = c(RColorBrewer::brewer.pal(12,name = "Paired"), RColorBrewer::brewer.pal(11,name = "Spectral")[1:3],'black')
+      col = grDevices::adjustcolor(col = col, alpha.f = 0.7)
       names(col) = names = c('Nonstop_Mutation','Frame_Shift_Del','Silent','Missense_Mutation','IGR','Nonsense_Mutation',
                              'RNA','Splice_Site','Intron','Frame_Shift_Ins','In_Frame_Dell','In_Frame_Del','ITD','In_Frame_Ins','Translation_Start_Site',"Multi_Hit")
     }else{
       col = colors
     }
   }
+
+
 
   #prot.dat = prot.dat[Variant_Classification != 'Splice_Site']
   #Remove 'p.'
@@ -206,49 +210,7 @@ lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosS
     xlimPos = xlimPos[-(length(xlimPos)-1)]
   }
 
-  pl = ggplot()+geom_segment(data = prot.snp.sumamry, aes(x = pos, xend = pos2, y = 0.8, yend = count2-0.03), color = 'gray70', size = 0.5)
-  pl = pl+geom_point(data = prot.snp.sumamry, aes(x = pos2, y = count2, color = Variant_Classification), size = pointSize, alpha = 0.7)
-  pl = pl+scale_color_manual(values = col)+ylab("# Mutations")
-  pl = pl+geom_segment(aes_all(c('x','y', 'xend', 'yend')), data = data.frame(y = c(min(lim.pos), 0), yend = c(6, 0), x = c(0, 0), xend = c(0, max(xlimPos))), size = 0.7)
-  pl = pl+theme(panel.background = element_blank(), axis.title.x = element_blank(), axis.title.y = element_text(size = titleSize[2], face = "bold", color = "black"), axis.text.y = element_text(face="bold", size = axisTextSize[2], color = "black"), axis.text.x = element_text(face="bold", color = "black", size = axisTextSize[1]))
-  pl = pl+scale_y_continuous(breaks = lim.pos, labels = lim.lab, expand = c(0, 0), limits = c(0, 6.5))
-  pl = pl+scale_x_continuous(breaks = xlimPos, expand = c(0, 0), limits = c(0, max(xlimPos)+round(0.02*max(xlimPos))))
-  pl = pl+theme(legend.position = 'bottom', legend.text=element_text(size = legendTxtSize), legend.title = element_blank(), legend.key.size =  unit(0.35, "cm"), legend.box.background = element_blank())
-  pl = pl+guides(colour = guide_legend(nrow = 3, override.aes = list(size = 3, fill = NA)), fill = guide_legend(nrow = 3, override.aes = list(size = 3)))
-  #pl = pl+theme(axis.text.y = element_blank(), axis.line.x = element_blank(), axis.ticks.y = element_blank())
-  #pl = pl+geom_segment(aes_all(c('y', 'yend')), data = data.frame(y = c(min(lim.pos), 0), yend = c(6, 0), x = c(0, 0), xend = c(0, len)))
-
-  # p = ggplot()+geom_segment(data = prot.snp.sumamry, aes(x = pos, xend = pos2, y = 0.8, yend = count2-0.03), color = 'gray70', size = 0.5)+
-  #   geom_point(data = prot.snp.sumamry, aes(x = pos2, y = count2, color = Variant_Classification), size = 1.5, alpha = 0.7)+
-  #   scale_color_manual(values = col)+cowplot::theme_cowplot()+
-  #   theme(legend.text=element_text(size = legendTxtSize), axis.text.y = element_text(size = 8), legend.position = 'bottom', axis.line.x = element_blank(), legend.title = element_blank(), legend.key.size =  unit(0.35, "cm"))+
-  #   xlab('')+ylab('# Mutations')+
-  #   guides(colour = guide_legend(nrow = 3, override.aes = list(size = 3)), fill = guide_legend(nrow = 3, override.aes = list(size = 3)))+
-  #   scale_x_continuous(breaks = pretty(0:max(prot$aa.length)))+
-  #   scale_y_continuous(breaks = lim.pos, labels = lim.lab, limits = c(0, 6.5))
-
-  p = pl+geom_rect(data = prot, aes(xmin = 0, xmax = len, ymin = 0.2, ymax = 0.8), fill = 'gray')
-
-  #Plot protein domains. If no domains found, just draw background protein.
-  if(nrow(prot) > 0){
-    if(showDomainLabel){
-      p = p+geom_rect(data = prot, aes(xmin = Start, xmax = End, ymin = 0.1, ymax = 0.9, fill = Label))
-      if(labelOnlyUniqueDoamins){
-        protLab = prot[!duplicated(Label)]
-        protLab$pos = rowMeans(x = protLab[,.(Start, End)])
-        p = p+geom_text(data = protLab, aes(x = pos, y = 0.5, label = Label, fontface = 'bold'), size = domainLabelSize)+guides(fill = FALSE)
-      }else{
-        prot$pos = rowMeans(x = prot[,.(Start, End)])
-        p = p+geom_text(data = prot, aes(x = pos, y = 0.5, label = Label, fontface = 'bold'), size = domainLabelSize)+guides(fill = FALSE)
-      }
-    }else{
-      p = p+geom_rect(data = prot, aes(xmin = Start, xmax = End, ymin = 0.1, ymax = 0.9, fill = Label))
-    }
-    if(!is.null(domainColors)){
-      p = p+scale_fill_manual(values = domainColors)
-    }
-  }
-
+  #-----------------------------------
   #If user asks to label points, use ggrepel to label.
   if(!is.null(labelPos)){
     prot.snp.sumamry = data.table::data.table(prot.snp.sumamry)
@@ -288,43 +250,85 @@ lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosS
       }
       labDat = labDatCollapsed
     }
-
-    if(length(labelPos) == 1){
-      if(labelPos == 'all'){
-        p = p+ggrepel::geom_text_repel(data = labDat, aes(pos2, count2, label = as.character(conv), fontface = 'bold'), force = 2, nudge_y = 0.3, nudge_x = 0.3, size = labPosSize, segment.alpha = 0.6, min.segment.length = unit(0.7, "cm"), angle = labPosAngle)
-      }else{
-        p = p+ggrepel::geom_text_repel(data = labDat, aes(pos2, count2, label = as.character(conv), fontface = 'bold'), force = 2, nudge_y = 0.3, nudge_x = 0.3, size = labPosSize, segment.alpha = 0.6, min.segment.length = unit(0.7, "cm"), angle = labPosAngle)
-        #p = p+geom_text_repel(data = prot.snp.summary[labThis %in% 'yes'], aes(pos2, count2, label = as.character(conv)), force = 2, nudge_y = 0.6, nudge_x = 0.3)
-      }
-    } else{
-      #prot.snp.sumamry$labThis = ifelse(test = prot.snp.sumamry$pos %in% labelPos, yes = 'yes', no = 'no')
-      p = p+ggrepel::geom_text_repel(data = labDat, aes(pos2, count2, label = as.character(conv), fontface = 'bold'), force = 2, nudge_y = 0.5, nudge_x = 0.3, size = labPosSize, segment.alpha = 0.6, min.segment.length = unit(0.7, "cm"), angle = labPosAngle)
-      #p = p+geom_text_repel(data = prot.snp.summary[labThis %in% 'yes'], aes(pos2, count2, label = as.character(conv)), force = 2, nudge_y = 0.6, nudge_x = 0.3)
-    }
   }
 
-  p = p+ggtitle(label = paste(geneID, ' (',unique(prot[,refseq.ID]), ')',sep=''))
-  if(showMutationRate){
 
-    p = p+ggtitle(label = cbioSubTitle, subtitle = unique(prot[,refseq.ID]))+
-      theme(plot.title = element_text(size = titleSize[1], face = "bold"))+
-      theme(plot.subtitle = element_text(size = titleSize[2], face = "bold"))
+  #-----------------------------------
+  #Base
+  domains = unique(prot[,Label])
+  domain_cols = c(RColorBrewer::brewer.pal(9, name = "Set1"),
+                  RColorBrewer::brewer.pal(8, name = "Set2"),
+                  RColorBrewer::brewer.pal(12, name = "Set3"))
+
+  if(length(domains) > length(domain_cols)){
+    domain_cols = sample(colours(), size = length(domains), replace = FALSE)
   }
 
-  if(cBioPortal){
-    p = p+ggtitle(label = cbioSubTitle, subtitle = paste0(geneID, ': ' ,unique(prot[,refseq.ID])))+theme(plot.title = element_text(size = 10, face = "bold", color = 'blue', hjust = 0))+
-      theme(plot.subtitle = element_text(size = 7, face = "bold", color = '#1F78B4'))
+  domain_cols = domain_cols[1:length(domains)]
+  #domain_cols = grDevices::adjustcolor(col = domain_cols, alpha.f = 0.75)
+  names(domain_cols) = domains
+
+  col = col[unique(as.character(prot.snp.sumamry[,Variant_Classification]))]
+
+  if(showDomainLabel){
+    lo = matrix(data = c(1, 1, 2, 2), nrow = 2, byrow = TRUE)
+    layout(mat = lo, heights = c(3.5, 1.5))
+  }else{
+    lo = matrix(data = c(1, 1, 3, 2), nrow = 2, byrow = TRUE)
+    layout(mat = lo, heights = c(3.5, 1.5), widths = c(2, 2))
   }
 
-  print(p)
+
+  par(mar = c(1, 3.5, 2, 1))
+  plot(0, 0, pch = NA, ylim = c(0, 6.5), xlim = c(0, len), axes = FALSE, xlab = NA, ylab = NA)
+  rect(xleft = 0, ybottom = 0.2, xright = len, ytop = 0.8, col = "gray70", border = "gray70")
+  axis(side = 1, at = xlimPos, labels = xlimPos, lwd = 2, font = 2, cex.axis = axisTextSize[1], line = -0.4)
+  axis(side = 2, at = lim.pos, labels = lim.lab, lwd = 2, font = 2, las = 2,
+       cex.axis = axisTextSize[2])
+  mtext(text = "# Mutations", side = 2, line = 2.2, font = 2)
+  segments(x0 = prot.snp.sumamry[,pos2], y0 = 0.8, x1 = prot.snp.sumamry[,pos2], y1 = prot.snp.sumamry[,count2-0.03], lwd = 2)
+  points(x = prot.snp.sumamry[,pos2], y = prot.snp.sumamry[,count2], col = col, pch = 16, cex = pointSize)
+  rect(xleft = prot[,Start], ybottom = 0.1, xright = prot[,End], ytop = 0.9, col = domain_cols, border = NA)
+
+  title(main = cbioSubTitle, adj = 0, font = 2, cex.main = titleSize[1], line = 0.8)
+  title(main = unique(prot[,refseq.ID]), adj = 0, font = 1, line = -0.5, cex.main = titleSize[2])
+
+  if(showDomainLabel){
+    prot$pos = rowMeans(x = prot[,.(Start, End)])
+    text(y = 0.5, x = prot$pos, labels = prot$Label, font = 2, cex = domainLabelSize)
+  }
+
+  if(!is.null(labelPos)){
+    #prot.snp.sumamry = repelPoints(dat = prot.snp.sumamry, protLen = len, clustSize = 5)
+    text(x = labDat[,pos2], y = labDat[,count2+0.45], labels = labDat[,conv],
+         font = 2, srt = labPosAngle, cex = labPosSize)
+  }
+
+  if(showDomainLabel){
+    plot.new()
+    par(mar = c(1, 1, 1, 1))
+    legend("left", legend = names(col), col = col,  bty = "n", border=NA,
+           xpd = TRUE, text.font = 2, pch = 16, ncol = 3, xjust = 0, yjust = 0,
+           cex = legendTxtSize, y.intersp = 1.5, x.intersp = 1, pt.cex = 1.2 * legendTxtSize)
+  }else{
+    plot.new()
+    par(mar = c(0, 1, 0, 1))
+    legend("left", legend = names(col),  col = col, bty = "n", border = NA,
+           xpd = FALSE, text.font = 2, pch = 16, xjust = 0, yjust = 0,
+           ncol = 2, cex = legendTxtSize, pt.cex = 1.2 * legendTxtSize,
+           y.intersp = 1.5, x.intersp = 0.5)
+
+    plot.new()
+    par(mar = c(0, 1, 0, 1))
+    legend("left", legend = names(domain_cols),  col = domain_cols, bty = "n", border = NA,
+           xpd = FALSE, text.font = 2, pch = 15, xjust = 0, yjust = 0,
+           ncol = 2, cex = legendTxtSize, pt.cex = 1.2 * legendTxtSize,
+           y.intersp = 1.5, x.intersp = 0.5)
+  }
+
 
   if(printCount){
     print(prot.snp.sumamry[,.(mutations = sum(count)), pos][order(mutations, decreasing = TRUE)])
   }
 
-  if(!is.null(fn)){
-    cowplot::save_plot(filename = paste0(fn, ".pdf"), plot = p, base_height = 4, base_width = 8, bg = 'white')
-  }
-
-  return(p)
 }
