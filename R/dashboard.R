@@ -21,7 +21,7 @@ dashboard = function(maf, color = NULL, rmOutlier = TRUE, titv.color = NULL, sfs
 
   lo = matrix(data = 1:6, nrow = 2, byrow = TRUE)
   layout(mat = lo, heights = c(3.5, 3), widths = c(3, 2, 2))
-  par(cex.axis = fontSize, font = 2, cex.main = titleSize, lwd = 2)
+  par(cex.axis = fontSize, font = 2, cex.main = titleSize[1], lwd = 2)
 
   #--------------------------- variant classification plot -----------------
   vc.plot.dat = rev(rowSums(vcs))
@@ -33,7 +33,7 @@ dashboard = function(maf, color = NULL, rmOutlier = TRUE, titv.color = NULL, sfs
   axis(side = 2, at = b, labels = names(vc.plot.dat), lwd = 2, cex.axis = fontSize,
        las = 2, line = 0.2, hadj = 0.9, font = 2, tick = FALSE)
   axis(side = 1, at = xt, lwd = 2, font = 2, las = 2, cex.axis = fontSize*0.9)
-  title(main = "Variant Classification", adj = 0, cex.main = titleSize, font = 2)
+  title(main = "Variant Classification", adj = 0, cex.main = titleSize[1], font = 2)
 
   #--------------------------- variant type plot -----------------
   vt.plot.dat = maf@variant.type.summary
@@ -50,7 +50,7 @@ dashboard = function(maf, color = NULL, rmOutlier = TRUE, titv.color = NULL, sfs
   axis(side = 2, at = b, labels = vt.plot.dat$variable, lwd = 2, cex.axis = fontSize,
        las = 2, line = 0.2, hadj = 0.8, font = 2, tick = FALSE)
   axis(side = 1, at = xt, lwd = 2, font = 2, las = 2, cex.axis = fontSize*0.9)
-  title(main = "Variant Type", adj = 0, cex.main = titleSize, font = 2)
+  title(main = "Variant Type", adj = 0, cex.main = titleSize[1], font = 2)
 
   #--------------------------- titv summary plot -----------------
   titv = titv(maf = maf, useSyn = TRUE, plot = FALSE)
@@ -74,7 +74,7 @@ dashboard = function(maf, color = NULL, rmOutlier = TRUE, titv.color = NULL, sfs
   axis(side = 2, at = b, labels = rownames(titv.sums), lwd = 2, cex.axis = fontSize,
        las = 2, line = 0.2, hadj = 0.8, font = 2, tick = FALSE)
   axis(side = 1, at = xt, lwd = 2, font = 2, las = 2, cex.axis = fontSize*0.9)
-  title(main = "SNV Class", adj = 0, cex.main = titleSize, font = 2)
+  title(main = "SNV Class", adj = 0, cex.main = titleSize[1], font = 2)
 
   #--------------------------- variant per sample plot -----------------
 
@@ -82,21 +82,24 @@ dashboard = function(maf, color = NULL, rmOutlier = TRUE, titv.color = NULL, sfs
   b = barplot(vcs, col = col[rownames(vcs)], border = NA, axes = FALSE, names.arg =  rep("", ncol(vcs)))
   axis(side = 2, at = as.integer(seq(0, max(colSums(vcs)), length.out = 4)), lwd = 2, font = 2, las = 2,
        line = -0.3, hadj = 0.6, cex.axis = fontSize)
-  title(main = "Variants per sample", adj = 0, cex.main = titleSize, font = 2, line = 2)
+  title(main = "Variants per sample", adj = 0, cex.main = titleSize[1], font = 2, line = 2)
 
   if(!is.null(stat)){
     if(stat == 'mean'){
       med.line = round(maf@summary[nrow(maf@summary),Mean], 2)
       df = data.frame(y = c(med.line), x = as.integer(0.8*nrow(getSampleSummary(maf))), label = c(paste('Mean: ', med.line, sep='')))
+      title(main = paste0("Mean: ", med.line), adj = 0, cex.main = titleSize[1]*0.8, font = 2, line = 1)
     }else if(stat == 'median'){
       med.line = round(maf@summary[nrow(maf@summary),Median], 2)
       df = data.frame(y = c(med.line), x = as.integer(0.8*nrow(getSampleSummary(maf))), label = c(paste('Median: ', med.line, sep='')))
+      title(main = paste0("Median: ", med.line), adj = 0, cex.main = titleSize[1]*0.8, font = 2, line = 1)
     }
   }else{
     med.line = round(max(maf@summary[,Median], na.rm = TRUE), 2)
+    title(main = paste0("Median: ", med.line), adj = 0, cex.main = titleSize[1]*0.8, font = 2, line = 1)
   }
 
-  title(main = paste0("Median: ", med.line), adj = 0, cex.main = titleSize*0.8, font = 2, line = 1)
+
   lines(x = c(1, b[length(b)]), y = c(med.line, med.line), col = "maroon", lwd = 2, lty = 2)
 
   #--------------------------- vc summary plot -----------------
@@ -107,7 +110,7 @@ dashboard = function(maf, color = NULL, rmOutlier = TRUE, titv.color = NULL, sfs
           axes = FALSE, outline = FALSE, lwd = 1, border = grDevices::adjustcolor(col = "black", alpha.f = 0.6))
   axis(side = 2, at = as.integer(seq(0, max(boxH[,boxStat], na.rm = TRUE), length.out = 4)),
        lwd = 2, font = 2, cex.axis = fontSize, las = 2)
-  title(main = "Variant Classification \nsummary", adj = 0, cex.main = titleSize, font = 2, line = 1)
+  title(main = "Variant Classification \nsummary", adj = 0, cex.main = titleSize[1], font = 2, line = 1)
 
 #--------------------------- hugo-symbol plot -----------------
   gs = getGeneSummary(maf)
@@ -133,7 +136,7 @@ dashboard = function(maf, color = NULL, rmOutlier = TRUE, titv.color = NULL, sfs
   axis(side = 2, at = b, labels = colnames(gs.dat), lwd = 2, cex.axis = fontSize,
        las = 2, line = 0.2, hadj = 0.8, font = 2, tick = FALSE)
   axis(side = 1, at = xt, lwd = 2, font = 2, las = 2, cex.axis = fontSize*0.9)
-  title(main = paste0('Top ',  n, '\nmutated genes'), adj = 0, cex.main = titleSize, font = 2)
+  title(main = paste0('Top ',  n, '\nmutated genes'), adj = 0, cex.main = titleSize[1], font = 2)
 
 }
 
