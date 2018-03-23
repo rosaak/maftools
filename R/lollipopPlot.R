@@ -50,14 +50,6 @@ lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosS
   gff = "inst/extdata/protein_domains.rds"
   gff = readRDS(file = gff)
 
-  # if(Sys.info()[['sysname']] == 'Windows'){
-  #   gff.gz = gzfile(description = gff, open = 'r')
-  #   gff <- suppressWarnings( data.table(read.csv( file = gff.gz, header = TRUE, sep = '\t', stringsAsFactors = FALSE)) )
-  #   close(gff.gz)
-  # } else{
-  #   gff = data.table::fread(input = paste('zcat <', gff), sep = '\t', stringsAsFactors = FALSE)
-  # }
-
   mut = subsetMaf(maf = maf, includeSyn = FALSE, genes = gene, query = "Variant_Type != 'CNV'")
 
   if(is.null(AACol)){
@@ -109,6 +101,7 @@ lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosS
   len = as.numeric(max(prot$aa.length, na.rm = TRUE))
   #Remove NA's
   prot = prot[!is.na(Label)]
+  prot = prot[,domain_lenght := End - Start][order(domain_lenght, decreasing = TRUE)][,domain_lenght := NULL]
 
   #hard coded colors for variant classification if user doesnt provide any
 
@@ -256,9 +249,9 @@ lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosS
   #-----------------------------------
   #Base
   domains = unique(prot[,Label])
-  domain_cols = c(RColorBrewer::brewer.pal(9, name = "Set1"),
-                  RColorBrewer::brewer.pal(8, name = "Set2"),
-                  RColorBrewer::brewer.pal(12, name = "Set3"))
+  domain_cols = c(RColorBrewer::brewer.pal(8, name = "Accent"),
+                  RColorBrewer::brewer.pal(12, name = "Set3"),
+                  RColorBrewer::brewer.pal(8, name = "Set1"))
 
   if(length(domains) > length(domain_cols)){
     domain_cols = sample(colours(), size = length(domains), replace = FALSE)
@@ -282,11 +275,12 @@ lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosS
   par(mar = c(1, 3.5, 2, 1))
   plot(0, 0, pch = NA, ylim = c(0, 6.5), xlim = c(0, len), axes = FALSE, xlab = NA, ylab = NA)
   rect(xleft = 0, ybottom = 0.2, xright = len, ytop = 0.8, col = "gray70", border = "gray70")
-  axis(side = 1, at = xlimPos, labels = xlimPos, lwd = 2, font = 2, cex.axis = axisTextSize[1], line = -0.4)
+  axis(side = 1, at = xlimPos, labels = xlimPos, lwd = 2, font = 2,
+       cex.axis = axisTextSize[1], line = -0.4)
   axis(side = 2, at = lim.pos, labels = lim.lab, lwd = 2, font = 2, las = 2,
        cex.axis = axisTextSize[2])
   mtext(text = "# Mutations", side = 2, line = 2.2, font = 2)
-  segments(x0 = prot.snp.sumamry[,pos2], y0 = 0.8, x1 = prot.snp.sumamry[,pos2], y1 = prot.snp.sumamry[,count2-0.03], lwd = 2)
+  segments(x0 = prot.snp.sumamry[,pos2], y0 = 0.8, x1 = prot.snp.sumamry[,pos2], y1 = prot.snp.sumamry[,count2-0.03], lwd = 2, col = "gray70")
   points(x = prot.snp.sumamry[,pos2], y = prot.snp.sumamry[,count2], col = col, pch = 16, cex = pointSize)
   rect(xleft = prot[,Start], ybottom = 0.1, xright = prot[,End], ytop = 0.9, col = domain_cols, border = NA)
 
@@ -306,24 +300,28 @@ lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosS
 
   if(showDomainLabel){
     plot.new()
-    par(mar = c(1, 1, 1, 1))
+    par(mar = c(1, 0, 1, 1))
     legend("left", legend = names(col), col = col,  bty = "n", border=NA,
-           xpd = TRUE, text.font = 2, pch = 16, ncol = 3, xjust = 0, yjust = 0,
-           cex = legendTxtSize, y.intersp = 1.5, x.intersp = 1, pt.cex = 1.2 * legendTxtSize)
+           xpd = TRUE, text.font = 2, pch = 16, xjust = 0, yjust = 0,
+           cex = legendTxtSize, y.intersp = 1.5, x.intersp = 1,
+           pt.cex = 1.2 * legendTxtSize, ncol = ceiling(length(col)/4))
   }else{
     plot.new()
     par(mar = c(0, 1, 0, 1))
     legend("left", legend = names(col),  col = col, bty = "n", border = NA,
            xpd = FALSE, text.font = 2, pch = 16, xjust = 0, yjust = 0,
-           ncol = 2, cex = legendTxtSize, pt.cex = 1.2 * legendTxtSize,
-           y.intersp = 1.5, x.intersp = 0.5)
+           ncol = ceiling(length(col)/4), cex = legendTxtSize, pt.cex = 1.2 * legendTxtSize,
+           y.intersp = 1.5, x.intersp = 0.5, text.width = 0.6)
 
     plot.new()
     par(mar = c(0, 1, 0, 1))
+
+    domain_cols = domain_cols[order(nchar(names(domain_cols)), decreasing = TRUE)]
+
     legend("left", legend = names(domain_cols),  col = domain_cols, bty = "n", border = NA,
            xpd = FALSE, text.font = 2, pch = 15, xjust = 0, yjust = 0,
-           ncol = 2, cex = legendTxtSize, pt.cex = 1.2 * legendTxtSize,
-           y.intersp = 1.5, x.intersp = 0.5)
+           ncol = ceiling(length(domain_cols)/4), cex = legendTxtSize, pt.cex = 1.2 * legendTxtSize,
+           y.intersp = 1.5, x.intersp = 0.5, text.width = 0.6)
   }
 
 
