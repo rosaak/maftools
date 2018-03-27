@@ -577,11 +577,8 @@ We can also analyze the differences in mutational patterns between APOBEC enrich
 
 Note that, LAML with no APOBEC enrichments, is not an ideal cohort for this sort of analysis and hence below plot is only for demonstration purpose.
 
-<<<<<<< HEAD
-```{r, eval=TRUE, fig.height=4, fig.width=7}
-=======
+
 ```{r, eval=TRUE, fig.width=6, fig.height=5, fig.align='left'}
->>>>>>> 557cc66... Improve axis. #127
 plotApobecDiff(tnm = laml.tnm, maf = laml)
 ```
 
@@ -805,13 +802,10 @@ laml.sign = structure(list(signatures = structure(c(1.08748973712201e-18,
 "coSineSimMat", "nmfObj", "contributions"))
 ```
 
-<<<<<<< HEAD
-```{r, fig.width=6, fig.height=4, fig.align='center', eval = T}
-plotSignatures(laml.sign, title_size = 1)
-=======
+
+
 ```{r, fig.width=7, fig.align='left', eval = T}
 plotSignatures(laml.sign)
->>>>>>> 557cc66... Improve axis. #127
 ```
 
 
