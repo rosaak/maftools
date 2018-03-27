@@ -29,7 +29,7 @@
 
 plotmafSummary = function(maf, file = NULL, rmOutlier = TRUE, dashboard = TRUE, titvRaw = TRUE,
                           width = 10, height = 7, addStat = NULL, showBarcodes = FALSE, fs = 1,
-                          textSize = 2, color = NULL, statFontSize = 3, titleSize = c(1, 0.8), titvColor = NULL, top = 10){
+                          textSize = 0.8, color = NULL, statFontSize = 3, titleSize = c(1, 0.8), titvColor = NULL, top = 10){
 
 
   addStat.opts = c('mean', 'median')
@@ -74,6 +74,7 @@ plotmafSummary = function(maf, file = NULL, rmOutlier = TRUE, dashboard = TRUE, 
 
     #--------------------------- variant per sample plot -----------------
 
+    layout(mat = matrix(c(1, 1, 2, 2), ncol = 2, byrow = TRUE))
     if(showBarcodes){
       par(mar = c(7, 2, 3, 1))
       b = barplot(vcs, col = col[rownames(vcs)], border = NA, axes = FALSE, names.arg =  rep("", ncol(vcs)))

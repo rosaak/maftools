@@ -37,8 +37,8 @@
 
 lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosSize = 0.9, showMutationRate = TRUE, fn = NULL,
                          showDomainLabel = TRUE, cBioPortal = FALSE, refSeqID = NULL, proteinID = NULL,
-                         repel = FALSE, collapsePosLabel = TRUE, legendTxtSize = 1, labPosAngle = 0, domainLabelSize = 1, axisTextSize = c(1, 1),
-                         printCount = FALSE, colors = NULL, domainColors = NULL, labelOnlyUniqueDoamins = TRUE, defaultYaxis = TRUE, titleSize = c(1.2, 1), pointSize = 1.5){
+                         repel = FALSE, collapsePosLabel = TRUE, legendTxtSize = 0.8, labPosAngle = 0, domainLabelSize = 0.8, axisTextSize = c(1, 1),
+                         printCount = FALSE, colors = NULL, domainColors = NULL, labelOnlyUniqueDoamins = TRUE, defaultYaxis = FALSE, titleSize = c(1.2, 1), pointSize = 1.5){
 
   if(is.null(gene)){
     stop('Please provide a gene name.')
@@ -46,8 +46,8 @@ lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosS
 
   geneID = gene
   #Protein domain source.
-  #gff = system.file('extdata', 'protein_domains.rds', package = 'maftools')
-  gff = "inst/extdata/protein_domains.rds"
+  gff = system.file('extdata', 'protein_domains.rds', package = 'maftools')
+  #gff = "inst/extdata/protein_domains.rds"
   gff = readRDS(file = gff)
 
   mut = subsetMaf(maf = maf, includeSyn = FALSE, genes = gene, query = "Variant_Type != 'CNV'")
@@ -115,7 +115,8 @@ lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosS
     vc.cbio = c("Truncating", "Truncating", "Missense", "Truncating", "Truncating", "Truncating",
                 "In-frame", "In-frame")
     names(vc.cbio) = vc
-    col = c('Truncating' = "black", 'Missense' = '#33A02C', 'In-frame' = 'brown')
+    col = grDevices::adjustcolor(col = c("black", "#33A02C", "brown"), alpha.f = 0.7)
+    col = c('Truncating' = col[1], 'Missense' = col[2], 'In-frame' = col[3])
   }else{
     if(is.null(colors)){
       col = c(RColorBrewer::brewer.pal(12,name = "Paired"), RColorBrewer::brewer.pal(11,name = "Spectral")[1:3],'black')
@@ -265,21 +266,21 @@ lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosS
 
   if(showDomainLabel){
     lo = matrix(data = c(1, 1, 2, 2), nrow = 2, byrow = TRUE)
-    layout(mat = lo, heights = c(3.5, 1.5))
+    layout(mat = lo, heights = c(4, 1.25))
   }else{
     lo = matrix(data = c(1, 1, 3, 2), nrow = 2, byrow = TRUE)
-    layout(mat = lo, heights = c(3.5, 1.5), widths = c(2, 2))
+    layout(mat = lo, heights = c(4, 1.25), widths = c(3, 3))
   }
 
 
-  par(mar = c(1, 3.5, 2, 1))
+  par(mar = c(1, 2.5, 2, 1))
   plot(0, 0, pch = NA, ylim = c(0, 6.5), xlim = c(0, len), axes = FALSE, xlab = NA, ylab = NA)
   rect(xleft = 0, ybottom = 0.2, xright = len, ytop = 0.8, col = "gray70", border = "gray70")
   axis(side = 1, at = xlimPos, labels = xlimPos, lwd = 2, font = 2,
        cex.axis = axisTextSize[1], line = -0.4)
   axis(side = 2, at = lim.pos, labels = lim.lab, lwd = 2, font = 2, las = 2,
        cex.axis = axisTextSize[2])
-  mtext(text = "# Mutations", side = 2, line = 2.2, font = 2)
+  #mtext(text = "# Mutations", side = 2, line = 1.5, font = 2)
   segments(x0 = prot.snp.sumamry[,pos2], y0 = 0.8, x1 = prot.snp.sumamry[,pos2], y1 = prot.snp.sumamry[,count2-0.03], lwd = 2, col = "gray70")
   points(x = prot.snp.sumamry[,pos2], y = prot.snp.sumamry[,count2], col = col, pch = 16, cex = pointSize)
   rect(xleft = prot[,Start], ybottom = 0.1, xright = prot[,End], ytop = 0.9, col = domain_cols, border = NA)
@@ -307,20 +308,20 @@ lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosS
            pt.cex = 1.2 * legendTxtSize, ncol = ceiling(length(col)/4))
   }else{
     plot.new()
-    par(mar = c(0, 1, 0, 1))
+    par(mar = c(1, 0.5, 0.5, 1))
     legend("left", legend = names(col),  col = col, bty = "n", border = NA,
            xpd = FALSE, text.font = 2, pch = 16, xjust = 0, yjust = 0,
            ncol = ceiling(length(col)/4), cex = legendTxtSize, pt.cex = 1.2 * legendTxtSize,
            y.intersp = 1.5, x.intersp = 0.5, text.width = 0.6)
 
     plot.new()
-    par(mar = c(0, 1, 0, 1))
+    par(mar = c(1, 0.5, 0.5, 1))
 
     domain_cols = domain_cols[order(nchar(names(domain_cols)), decreasing = TRUE)]
 
     legend("left", legend = names(domain_cols),  col = domain_cols, bty = "n", border = NA,
-           xpd = FALSE, text.font = 2, pch = 15, xjust = 0, yjust = 0,
-           ncol = ceiling(length(domain_cols)/4), cex = legendTxtSize, pt.cex = 1.2 * legendTxtSize,
+           xpd = FALSE, text.font = 2, pch = 16, xjust = 0, yjust = 0,
+           ncol = ceiling(length(col)/4), cex = legendTxtSize, pt.cex = 1.2 * legendTxtSize,
            y.intersp = 1.5, x.intersp = 0.5, text.width = 0.6)
   }
 
@@ -328,5 +329,4 @@ lollipopPlot = function(maf, gene = NULL, AACol = NULL, labelPos = NULL, labPosS
   if(printCount){
     print(prot.snp.sumamry[,.(mutations = sum(count)), pos][order(mutations, decreasing = TRUE)])
   }
-
 }
